@@ -2,6 +2,8 @@
   "dependencies": {
     "express": "^4.18.1",
     "fs": "^0.0.1-security",
-    "inquirer": "^9.1.0"
+    "inquirer": "^8.0.0",
+    "inquirer-menu": "^1.0.0",
+    "node-fetch": "^2.6.7"
   }
 }
