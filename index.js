@@ -3,34 +3,20 @@ const inquirer = require('inquirer');
 const fs = require('fs');
 const util = require('util');
 
-let level = 0;
+const Employee = require('./lib/employee');
+const Manager = require('./lib/manager');
+const Engineer = require('./lib/engineer');
+const Intern = require('./lib/intern');
 
-const showMenu = () => {
-  const questions = [
-    {
-      type: "list",
-      name: "action",
-      message: "Do you want to add another employee?",
-      choices: [
-        { name: "Add Engineer", value: "getQuiz('engineer')" },
-        { name: "Add Intern", value: "getQuiz('intern')" },
-        { name: "Save All Positions", value: "quit"}
-      ]
-    }
-  ];
-  return inquirer.prompt(questions);
-};
+let positions = [];
 
-showMenu();
-
-function getQuiz(startAt) {
-  if (startAt === "manager") {
-    let questions = [
+const startQuiz =  async () => {
+  inquirer.prompt([
     {
       type: 'input',
       message: 'What is your name?',
       name: 'managerName',
-    },  
+    },
     {
       type: 'input',
       message: 'What is your employee ID?',
@@ -45,142 +31,174 @@ function getQuiz(startAt) {
       type: 'input',
       message: 'What is your office number?',
       name: 'managerOfficeNumber',
-    }];
-  } else if(startAt === "engineer") {
-      let questions = [
-    {
-      type: 'input',
-      message: 'What is your name?',
-      name: 'engineerName',
-    },  
-    {
-      type: 'input',
-      message: 'What is your employee ID?',
-      name: 'engineerId',
     },
-    {
-      type: 'input',
-      message: 'What is your email address?',
-      name: 'engineerEmail',
-    },
-    {
-      type: 'input',
-      message: 'What is your Github?',
-      name: 'engineerGithub',
-    }];
-  }else if (startAt === "intern") {
-      let questions = [
-    {
-      type: 'input',
-      message: 'What is your name?',
-      name: 'internName',
-    },  
-    {
-      type: 'input',
-      message: 'What is your employee ID?',
-      name: 'internId',
-    },
-    {
-      type: 'input',
-      message: 'What is your email address?',
-      name: 'internEmail',
-    },
-    {
-      type: 'input',
-      message: 'Where do you go the school?',
-      name: 'internSchool',
-    }];
+  {
+    name: "add_employee",
+    type: "confirm",
+    message: "Do you want to add another employee? (No, to quit and save)",
+  },
+  {
+    name: "choose_position",
+        type: "list",
+        message: "Which type of employee?",
+        choices: [ "Engineer", "Intern"],
+        when (answers){
+          return answers.add_employee === true;
+        }
   }
-  return questions;
-}
-/*  else{};
-    inquirer
-    .prompt([
-      
-    ])
-  .then((response) =>{
-      if(addEngineer){
-        inquirer.prompt([
-        
-        {
-          type: 'confirm',
-          message: 'Do you want to add an engineer?',
-          name: 'addEngineer',
-        },
-        ])
+  
+  ]).then((managerAnswers) => {
+    //console.log(answers.managerName);
+    if(!managerAnswers.add_employee){
+      let mgr = new Manager(managerAnswers.managerName, managerAnswers.managerEmail, managerAnswers.managerId, managerAnswers.managerOfficeNumber);
+      positions.push(mgr);
+      continueQuiz('exit');
+    }else if(managerAnswers.managerName){
+      let mgr = new Manager(managerAnswers.managerName, managerAnswers.managerEmail, managerAnswers.managerId, managerAnswers.managerOfficeNumber);
+      positions.push(mgr);
+      continueQuiz(managerAnswers.choose_position);
+    }else{}
+});
+
+const askForContinue = async () => {
+  inquirer.prompt([
+    {
+      name: "add_employee",
+      type: "confirm",
+      message: "Do you want to add another employee? (No, to quit and save)",
+    },
+    {
+      name: "choose_position",
+      type: "list",
+      message: "Which type of employee?",
+      choices: [ "Engineer", "Intern"],
+      when (answers){
+        return answers.add_employee;
       }
+    }
+  ]).then((answers) => {
+    if(!answers.add_employee){
+
+      continueQuiz('exit');
+    }else{      console.log('WHY?');
+      continueQuiz(answers.choose_position);
+    }
   });
+};
 
-
-
-    /*if(response){
-      fs.writeFile('index.html', `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Acme Corp's Employee page</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
-      integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
-      crossorigin="anonymous"
-    />
-    <link
-      href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap"
-      rel="stylesheet"
-    />
-    <link href="./Assets/styles/normalize.css" rel="stylesheet" />
-    <link href="./Assets/styles/styles.css" rel="stylesheet" />
-</head>
-<body>
-    <header>
-            <h1>
-            ${response.name}, Programmer Extraordinaire
-            </h1>
-            <h2>
-            Residing at ${response.location}
-            </h2>
-        <nav id="topnav">
-            More About Me: 
-            ${response.bio}
-            My LinkedIn ${response.linkedin} tells you a lot.<br>
-            My GitHub ${response.github} tells you everything.
-        </nav>
-    </header>
-    
-</body>
-<script src="./Assets/scripts/main.js"></script>
-</html>`,(err) => err ? console.error(err) : console.log('Success!')
-)
-);
+const continueQuiz = async (start) => {
+  if(start === 'Engineer'){
+    inquirer.prompt([
+    {
+                type: 'input',
+                message: 'What is the engineer\'s name?',
+                name: 'engineerName',
+    },  
+    {
+                type: 'input',
+                message: 'What is the engineer\'s employee ID?',
+                name: 'engineerId',
+    },
+    {
+                type: 'input',
+                message: 'What is the engineer\'s email address?',
+                name: 'engineerEmail',
+    },
+    {
+                type: 'input',
+                message: 'What is the engineer\'s Github?',
+                name: 'engineerGithub',
+    }
+    ]).then((engineerAnswers) => {
+      const egr = new Engineer(engineerAnswers.engineerName, engineerAnswers.engineerEmail, engineerAnswers.engineerId, engineerAnswers.engineerGithub);
+      positions.push(egr);
+      askForContinue();
+    });
+  }else if(start === 'Intern'){
+    inquirer.prompt([
+    {
+                type: 'input',
+                message: 'What is the intern\'s name?',
+                name: 'internName',
+    },
+    {
+                type: 'input',
+                message: 'What is the intern\'s employee ID?',
+                name: 'internId',
+    },
+    {
+                type: 'input',
+                message: 'What is the intern\'s email address?',
+                name: 'internEmail',
+    },
+    {
+                type: 'input',
+                message: 'Where does the intern go to school?',
+                name: 'internSchool',
+    }
+    ]).then((internAnswers) => {
+        const int = new Intern(internAnswers.internName, internAnswers.internEmail, internAnswers.internId, internAnswers.internSchool);
+        positions.push(int);
+        askForContinue();
+    });
+  }else if (start === "exit"){
+      let employeeCards = '';
+      for(let i=0; i < positions.length; i++){
+        if(positions[i].name){
+          let newCard = `<div class="card"><span class="empId">${positions[i].id}</span><br>
+          <span class="fName">${positions[i].name}</span><br>
+          <span class="empId">${positions[i].id}</span><br><span class="empEmail"><a href="mailto:${positions[i].email}" target="_blank">${positions[i].email}</a></span><br>
+          <span class="empOfficeNumber">${positions[i].officeNumber}</span><br></div>`;
+          employeeCards += newCard;
+        }
+      }
+      fs.writeFile(`index.html`, `<!DOCTYPE html>
+            <html lang="en">
+              <head>
+              <meta charset="UTF-8">
+              <title>Acme Corp's Employee page</title>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+              <link
+                rel="stylesheet"
+                href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              />
+              <link
+                rel="stylesheet"
+                href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+                integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+                crossorigin="anonymous"
+              />
+              <link
+                href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap"
+                rel="stylesheet"
+              />
+              <link href="./Assets/styles/normalize.css" rel="stylesheet" />
+              <link href="./Assets/styles/styles.css" rel="stylesheet" />
+            </head>
+            <body>
+              <header>
+                      <h1>
+                      Our Great Team!
+                      </h1>
+                      
+              </header>
+              <main id="cardDiv">
+                      <h2>More About Us:</h2>
+                      ${employeeCards}
+              </main>
+            </body>
+            </html>`, (err) =>
+            err ? console.error(err) : console.log('Success!'));
+      };
+  }
 }
-}
+
+startQuiz();
+
+
+
+//startMenu();
 /**
-WHEN I click on an email address in the HTML
-THEN my default email program opens and populates the TO field of the email with the address
-WHEN I click on the GitHub username
-THEN that GitHub profile opens in a new tab
-
-THEN I am presented with a menu with the option to add an engineer or an intern or to finish building my team
-
-WHEN I select the engineer option
-THEN I am prompted to enter the engineer?s name, ID, email, and GitHub username, and I am taken back to the menu
-
-WHEN I select the intern option
-THEN I am prompted to enter the intern?s name, ID, email, and school, and I am taken back to the menu
-
-WHEN I decide to finish building my team
-THEN I exit the application, and the HTML is generated
+EXTRA CREDIT validation to ensure that user input provided is in the proper expected format.
 */
-
-
-
-  /**
-   * validation to ensure that user input provided is in the proper expected format.
-   */
