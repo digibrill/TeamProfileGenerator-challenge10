@@ -152,7 +152,7 @@ const continueQuiz = async (start) => {
           if(positions[i].officeNumber){
             newCard += `<span class="empOfficeNumber" class="card-link">Office Number: ${positions[i].officeNumber}</span></div></div></div>`;
           }else if(positions[i].gitHub){
-            newCard += `<span class="engGithub">Engineer's GitHub: <a href="${positions[i].gitHub}" class="card-link" target="_blank">${positions[i].gitHub}</a></span></div></div></div>`;
+            newCard += `<span class="engGithub">Engineer's GitHub: <a href="https://${positions[i].gitHub}" class="card-link" target="_blank">${positions[i].gitHub}</a></span></div></div></div>`;
           }else if(positions[i].school){
             newCard += `<span class="intSchool" class="card-link">Intern's School: ${positions[i].school}</span></div></div></div>`;
           }
