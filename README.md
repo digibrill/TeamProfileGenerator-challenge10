@@ -1,6 +1,9 @@
 # TeamProfileGenerator-challenge10
 Team Profile Generator challenge 10
 
+Screenshot of app:
+![Team Profile Generator demo](./appscreenshot.png)
+
 Link to my GitHub:
 https://github.com/digibrill/TeamProfileGenerator-challenge10
 
