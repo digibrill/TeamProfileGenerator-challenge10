@@ -50,11 +50,11 @@ const startQuiz =  async () => {
   ]).then((managerAnswers) => {
     //console.log(answers.managerName);
     if(!managerAnswers.add_employee){
-      let mgr = new Manager(managerAnswers.managerName, managerAnswers.managerEmail, managerAnswers.managerId, managerAnswers.managerOfficeNumber);
+      let mgr = new Manager(managerAnswers.managerName, managerAnswers.managerEmail, managerAnswers.managerId, managerAnswers.managerOfficeNumber,'Manager');
       positions.push(mgr);
       continueQuiz('exit');
     }else if(managerAnswers.managerName){
-      let mgr = new Manager(managerAnswers.managerName, managerAnswers.managerEmail, managerAnswers.managerId, managerAnswers.managerOfficeNumber);
+      let mgr = new Manager(managerAnswers.managerName, managerAnswers.managerEmail, managerAnswers.managerId, managerAnswers.managerOfficeNumber,'Manager');
       positions.push(mgr);
       continueQuiz(managerAnswers.choose_position);
     }else{}
@@ -80,7 +80,7 @@ const askForContinue = async () => {
     if(!answers.add_employee){
 
       continueQuiz('exit');
-    }else{      console.log('WHY?');
+    }else{
       continueQuiz(answers.choose_position);
     }
   });
@@ -110,7 +110,7 @@ const continueQuiz = async (start) => {
                 name: 'engineerGithub',
     }
     ]).then((engineerAnswers) => {
-      const egr = new Engineer(engineerAnswers.engineerName, engineerAnswers.engineerEmail, engineerAnswers.engineerId, engineerAnswers.engineerGithub);
+      const egr = new Engineer(engineerAnswers.engineerName, engineerAnswers.engineerEmail, engineerAnswers.engineerId, engineerAnswers.engineerGithub,'Engineer');
       positions.push(egr);
       askForContinue();
     });
@@ -137,7 +137,7 @@ const continueQuiz = async (start) => {
                 name: 'internSchool',
     }
     ]).then((internAnswers) => {
-        const int = new Intern(internAnswers.internName, internAnswers.internEmail, internAnswers.internId, internAnswers.internSchool);
+        const int = new Intern(internAnswers.internName, internAnswers.internEmail, internAnswers.internId, internAnswers.internSchool,'Intern');
         positions.push(int);
         askForContinue();
     });
@@ -145,10 +145,17 @@ const continueQuiz = async (start) => {
       let employeeCards = '';
       for(let i=0; i < positions.length; i++){
         if(positions[i].name){
-          let newCard = `<div class="card"><span class="empId">${positions[i].id}</span><br>
-          <span class="fName">${positions[i].name}</span><br>
-          <span class="empId">${positions[i].id}</span><br><span class="empEmail"><a href="mailto:${positions[i].email}" target="_blank">${positions[i].email}</a></span><br>
-          <span class="empOfficeNumber">${positions[i].officeNumber}</span><br></div>`;
+          let newCard = `<div class="card"><div class="card-body"><div class="card-title">${positions[i].title}</div>
+          <div><span class="card-title">${positions[i].name}</span><br>
+          <span class="card-subtitle">${positions[i].id}</span><br>
+          <span class="empEmail"><a href="mailto:${positions[i].email}" target="_blank" class="card-link">${positions[i].email}</a></span><br>`;
+          if(positions[i].officeNumber){
+            newCard += `<span class="empOfficeNumber" class="card-link">Office Number: ${positions[i].officeNumber}</span></div></div></div>`;
+          }else if(positions[i].gitHub){
+            newCard += `<span class="engGithub">Engineer's GitHub: <a href="${positions[i].gitHub}" class="card-link" target="_blank">${positions[i].gitHub}</a></span></div></div></div>`;
+          }else if(positions[i].school){
+            newCard += `<span class="intSchool" class="card-link">Intern's School: ${positions[i].school}</span></div></div></div>`;
+          }
           employeeCards += newCard;
         }
       }
@@ -177,19 +184,21 @@ const continueQuiz = async (start) => {
               <link href="./Assets/styles/styles.css" rel="stylesheet" />
             </head>
             <body>
-              <header>
-                      <h1>
-                      Our Great Team!
-                      </h1>
-                      
+              <header class="jumbotron">
+                <h1>
+                Our Great Team!
+                </h1>
               </header>
               <main id="cardDiv">
-                      <h2>More About Us:</h2>
-                      ${employeeCards}
+                <h2>More About Us:</h2>
+                ${employeeCards}
               </main>
+              <footer>
+                An Unassociated Press Publication
+              </footer>
             </body>
             </html>`, (err) =>
-            err ? console.error(err) : console.log('Success!'));
+            err ? console.error(err) : console.log('Team members saved!'));
       };
   }
 }
